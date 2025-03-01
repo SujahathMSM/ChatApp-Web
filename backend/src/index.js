@@ -4,16 +4,31 @@ import MessageRoutes from "./routes/message.route.js";
 import dotenv from "dotenv";
 import { connectDB } from "./lib/db.js";
 import cookieParser from "cookie-parser";
+import cors from "cors";
+
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5001;
-app.use(express.json());
+
+// Middleware
+app.use(express.json({ limit: '50mb' })); // Parse JSON payloads with a size limit of 50MB
+app.use(express.urlencoded({ limit: '50mb', extended: true })); // Parse URL-encoded data with a size limit of 50MB
 app.use(cookieParser());
 
+// CORS Middleware
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Allow only this origin
+    credentials: true, // Allow cookies and authorization headers
+  })
+);
+
+// Routes
 app.use("/api/auth", AuthRoutes);
 app.use("/api/message", MessageRoutes);
 
+// Start Server
 app.listen(PORT, () => {
-  console.log("Server is started on port 5001");
+  console.log(`Server is started on port ${PORT}`);
   connectDB();
 });
