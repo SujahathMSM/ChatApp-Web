@@ -52,12 +52,12 @@ export const logIn = async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      res.status(400).json({ message: "invalid credentials" });
+      return res.status(400).json({ message: "invalid credentials" });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      res.status(400).json({ message: "invalid credentials" });
+      return res.status(400).json({ message: "invalid credentials" });
     }
 
     generateToken(user._id, res);
@@ -85,11 +85,11 @@ export const logOut = (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const profilePic = req.body;
+    const { profilePic } = req.body;
     const userId = req.user._id;
 
     if (!profilePic) {
-      req.status(400).json({ message: "Profile Pic is Required" });
+      return res.status(400).json({ message: "Profile pic is required" });
     }
 
     const uploadResponse = await cloudinary.uploader.upload(profilePic);
@@ -99,9 +99,9 @@ export const updateProfile = async (req, res) => {
       { new: true }
     );
 
-    res.status(201).json(updatedUser);
+    res.status(200).json(updatedUser);
   } catch (error) {
-    console.log("An error occurred during uploading image: " + error.message);
+    console.log("error in update profile:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
