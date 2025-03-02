@@ -25,7 +25,7 @@ app.use(
 
 // Routes
 app.use("/api/auth", AuthRoutes);
-app.use("/api/message", MessageRoutes);
+app.use("/api/messages", MessageRoutes);
 
 // Start Server
 app.listen(PORT, () => {
