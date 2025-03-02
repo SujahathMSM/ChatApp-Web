@@ -15,7 +15,7 @@ This is a full-stack chat application built with React, Vite, Express, and Mongo
 
 - React
 - Vite
-- CSS
+- Tailwind CSS
 
 ### Backend
 
