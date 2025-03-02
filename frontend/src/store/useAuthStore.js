@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { Api } from "../lib/api";
 import toast from "react-hot-toast";
+import { io } from "socket.io-client";
 
 export const useAuthStore = create((set) => ({
   authUser: null,
@@ -9,6 +10,9 @@ export const useAuthStore = create((set) => ({
   isUpdatingProfile: false,
 
   isCheckingAuth: true,
+
+  onlineUsers: [],
+  socket: null,
 
   checkAuth: async () => {
     try {
