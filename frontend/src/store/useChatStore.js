@@ -45,22 +45,43 @@ export const useChatStore = create((set, get) => ({
       toast.error(error.response.data.message);
     }
   },
-
   subscribeToMessages: () => {
     const { selectedUser } = get();
     if (!selectedUser) return;
+  const socket = useAuthStore.getState().socket;
+  socket.on("newMessage", (newMessage) => {
+    const isMessageSentFromSelectedUser =
+      newMessage.senderId === selectedUser._id;
+    if (!isMessageSentFromSelectedUser) return;
+  set({
+    messages: [...get().messages, newMessage],
+  });
+  });
+  // Add this handler for status updates
+  socket.on("messageStatusUpdate", ({ messageId, status }) => {
+    set((state) => ({
+      messages: state.messages.map((message) =>
+        message._id === messageId ? { ...message, status } : message
+      ),
+    }));
+  });
+},
+  markMessagesAsSeen: async (userId) => {
+    try {
+      await Api.put(`/messages/mark-seen/${userId}`);
+      const socket = useAuthStore.getState().socket;
+      socket.emit("messagesSeen", { userId });
+    } catch (error) {
+      console.error("Error marking messages as seen:", error);
+    }
+  },
 
-    const socket = useAuthStore.getState().socket;
-
-    socket.on("newMessage", (newMessage) => {
-      const isMessageSentFromSelectedUser =
-        newMessage.senderId === selectedUser._id;
-      if (!isMessageSentFromSelectedUser) return;
-
-      set({
-        messages: [...get().messages, newMessage],
-      });
-    });
+  updateMessageStatus: (userId, status) => {
+    set((state) => ({
+      messages: state.messages.map((message) =>
+        message.senderId === userId ? { ...message, status } : message
+      ),
+    }));
   },
 
   unsubscribeFromMessages: () => {

@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { Api } from "../lib/api";
 import toast from "react-hot-toast";
 import { io, Socket } from "socket.io-client";
+import { useChatStore } from "./useChatStore";
 
 const BASE_URL = "http://localhost:5001";
 export const useAuthStore = create((set, get) => ({
@@ -34,6 +35,7 @@ export const useAuthStore = create((set, get) => ({
       const res = await Api.post("/auth/signup", data);
       set({ authUser: res.data });
       get().connectSocket();
+      get().socket?.emit("userOnline");
       toast.success("Account Created Successfully");
     } catch (error) {
       console.log("An error occurred during sign up: " + error);
@@ -61,6 +63,7 @@ export const useAuthStore = create((set, get) => ({
       const res = await Api.post("/auth/login", data);
       set({ authUser: res.data });
       get().connectSocket();
+      get().socket?.emit("userOnline");
       toast.success("Login successful");
     } catch (error) {
       console.log("An error occurred during login: ", error);
@@ -96,9 +99,13 @@ export const useAuthStore = create((set, get) => ({
     socket.connect();
 
     set({ socket: socket });
-
     socket.on("getOnlineUsers", (userIds) => {
       set({ onlineUsers: userIds });
+    });
+
+    socket.on("messagesSeen", ({ userId }) => {
+      // Update your chat store to mark messages as seen
+      useChatStore.getState().updateMessageStatus(userId, "seen");
     });
   },
 

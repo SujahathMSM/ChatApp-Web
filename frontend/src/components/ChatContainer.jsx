@@ -13,6 +13,7 @@ const ChatContainer = () => {
     getMessages,
     isMessagesLoading,
     selectedUser,
+    markMessagesAsSeen,
     subscribeToMessages,
     unsubscribeFromMessages,
   } = useChatStore();
@@ -20,12 +21,22 @@ const ChatContainer = () => {
   const messageEndRef = useRef(null);
 
   useEffect(() => {
-    getMessages(selectedUser._id);
+    if (selectedUser) {
+      getMessages(selectedUser._id);
+      subscribeToMessages();
 
-    subscribeToMessages();
+      // Mark messages as seen when chat is opened
+      markMessagesAsSeen(selectedUser._id);
+    }
 
     return () => unsubscribeFromMessages();
-  }, [selectedUser._id, getMessages, subscribeToMessages, unsubscribeFromMessages]);
+  }, [
+    selectedUser._id,
+    getMessages,
+    subscribeToMessages,
+    unsubscribeFromMessages,
+    markMessagesAsSeen,
+  ]);
 
   useEffect(() => {
     if (messageEndRef.current && messages) {
@@ -51,7 +62,9 @@ const ChatContainer = () => {
         {messages.map((message) => (
           <div
             key={message._id}
-            className={`chat ${message.senderId === authUser._id ? "chat-end" : "chat-start"}`}
+            className={`chat ${
+              message.senderId === authUser._id ? "chat-end" : "chat-start"
+            }`}
             ref={messageEndRef}
           >
             <div className=" chat-image avatar">
@@ -80,6 +93,15 @@ const ChatContainer = () => {
                 />
               )}
               {message.text && <p>{message.text}</p>}
+            </div>
+            <div className="chat-footer">
+              {message.senderId === authUser._id && (
+                <span className="text-xs opacity-50">
+                  {message.status === "delivered" ? "✓✓" : "✓"}
+                  {message.seenAt &&
+                    ` • Seen ${formatMessageTime(message.seenAt)}`}
+                </span>
+              )}
             </div>
           </div>
         ))}
