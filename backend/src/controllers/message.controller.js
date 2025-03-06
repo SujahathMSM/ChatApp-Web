@@ -68,3 +68,19 @@ export const sendMessage = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+export const markMessagesAsSeen = async (req, res) => {
+  try {
+    const { id: userId } = req.params;
+    const myId = req.user._id;
+
+    await Message.updateMany(
+      { senderId: userId, receiverId: myId },
+      { seenAt: Date.now() }
+    );
+
+    res.status(200).json({ message: "Messages marked as seen" });
+  } catch (error) {
+    res.status(500).json({ message: "Error marking messages as seen" });
+  }
+};
